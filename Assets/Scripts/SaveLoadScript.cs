@@ -5,8 +5,12 @@ public class SaveLoadScript : MonoBehaviour
 {
     public string saveFileName = "playerData.json";
 
+    // Optional: shows the loaded data on the screen (used in the Circus scene)
+    public TMPro.TMP_Text infoText;
 
-    [SerializeField]
+
+    // JsonUtility needs [System.Serializable] to save and load this class
+    [System.Serializable]
     public class GameData
     {
         public int characterIndex;
@@ -37,11 +41,25 @@ public class SaveLoadScript : MonoBehaviour
             string json = File.ReadAllText(filePath);
             gameData = JsonUtility.FromJson<GameData>(json);
             Debug.Log("Player data loaded from " + filePath);
+
+            if (infoText != null)
+                infoText.text = "PLAYER: " + gameData.characterName +
+                    "   CHARACTER: " + (gameData.characterIndex + 1) +
+                    "   PLAYERS: " + gameData.playerCount;
         }
         else
         {
             Debug.LogWarning("Save file not found at " + filePath);
+
+            if (infoText != null)
+                infoText.text = "NO SAVED GAME";
         }
+    }
+
+    // Other scripts can read what was loaded
+    public GameData GetGameData()
+    {
+        return gameData;
     }
 
 }
