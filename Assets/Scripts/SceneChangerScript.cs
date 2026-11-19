@@ -10,6 +10,11 @@ public class SceneChangerScript : MonoBehaviour
     public SaveLoadScript saveLoadScript;
     public FadeScript fadeScript;
 
+    // How long one of the ~20 fade steps lasts when the scene is left (0.025 = about half a second)
+    public float changeFadeTime = 0.025f;
+
+    bool isChanging;
+
     public void ExitGame()
     {
         StartCoroutine(Exit());
@@ -17,13 +22,27 @@ public class SceneChangerScript : MonoBehaviour
 
     public void ChangeScene(string sceneName)
     {
+        // A second click while the scene is already changing is ignored
+        if (isChanging)
+            return;
+
+        isChanging = true;
         StartCoroutine(Change(sceneName));
     }
 
     IEnumerator Change(string sceneName)
     {
-        // A short wait, so the click sound can still be heard
-        yield return new WaitForSeconds(0.4f);
+        if (fadeScript != null)
+        {
+            // The screen fades to dark (the click sound can still be heard meanwhile),
+            // the next scene fades in by itself with its own Overlay
+            yield return fadeScript.FadeOut(changeFadeTime);
+        }
+        else
+        {
+            // A short wait, so the click sound can still be heard
+            yield return new WaitForSeconds(0.4f);
+        }
 
         SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
     }
@@ -79,8 +98,9 @@ public class SceneChangerScript : MonoBehaviour
         }
         else if (string.Equals(action, "menu", StringComparison.OrdinalIgnoreCase))
         {
+            // FadeOut darkens the screen before the scene changes (FadeIn would make it lighter)
             if (fadeScript != null)
-                yield return fadeScript.FadeIn(0.1f);
+                yield return fadeScript.FadeOut(changeFadeTime);
             SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
         }
     }
