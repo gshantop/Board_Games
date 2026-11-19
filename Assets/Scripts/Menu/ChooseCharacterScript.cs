@@ -8,11 +8,16 @@ public class ChooseCharacterScript : MonoBehaviour
     public GameObject inputField;
     string characterName;
     public int playerCount = 3;
+    // How many players can be chosen with the arrows
+    public int minPlayers = 2;
+    public int maxPlayers = 4;
+    // Text between the player count arrows
+    public TMPro.TMP_Text playerCountText;
     public SceneChangerScript sceneChangerScript;
     // Text above the character that shows "current / total", e.g. "1 / 7"
     public TMPro.TMP_Text counterText;
 
-    
+
     void Awake()
     {
         characterIndex = 0;
@@ -23,6 +28,34 @@ public class ChooseCharacterScript : MonoBehaviour
 
         characters[characterIndex].SetActive(true);
         UpdateCounter();
+
+        // The last chosen player count is remembered
+        playerCount = Mathf.Clamp(PlayerPrefs.GetInt("PlayerCount", playerCount), minPlayers, maxPlayers);
+        UpdatePlayerCount();
+    }
+
+    void UpdatePlayerCount()
+    {
+        if (playerCountText != null)
+            playerCountText.text = playerCount.ToString();
+    }
+
+    public void NextPlayerCount()
+    {
+        playerCount++;
+        if (playerCount > maxPlayers)
+            playerCount = minPlayers;
+
+        UpdatePlayerCount();
+    }
+
+    public void PreviousPlayerCount()
+    {
+        playerCount--;
+        if (playerCount < minPlayers)
+            playerCount = maxPlayers;
+
+        UpdatePlayerCount();
     }
 
     void UpdateCounter()
